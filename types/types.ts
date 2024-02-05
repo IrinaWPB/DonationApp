@@ -1,8 +1,9 @@
 export type UserType = {
-  firstName: string;
-  lastName: string;
-  userId: number;
+  isLoggedIn: boolean;
   profileImage: string;
+  displayName?: string;
+  token?: string;
+  email?: string;
 };
 
 export type CategoryType = {

@@ -18,18 +18,20 @@ import {useDispatch, useSelector} from 'react-redux';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
 import Tab from '../components/Tab';
 import {updateSelectedCategoryId} from '../../redux/reducers/Categories';
-import {CategoryType, ItemType} from '../../types/types';
+import {CategoryType, ItemType, UserType} from '../../types/types';
 import {pagination} from '../helpers/pagination';
 import SingleDonationItem from '../components/SingleDonationItem';
 import {Routes} from '../../navigation/Routes';
 import {updateSelectedDonationId} from '../../redux/reducers/Donations';
+import {RootState} from '../../redux/store';
+import {resetToInitialState} from '../../redux/reducers/User';
+import {logout} from '../api/user';
 
 export default function Home({navigation}) {
-  const user = useSelector(state => state.user);
-  const categories = useSelector(state => state.categories);
-  const donations = useSelector(state => state.donations);
+  const user: UserType = useSelector((state: RootState) => state.user);
+  const categories = useSelector((state: RootState) => state.categories);
+  const donations = useSelector((state: RootState) => state.donations);
   const dispatch = useDispatch();
-
   const [catPage, setCatPage] = useState<number>(1);
   const [catList, setCatList] = useState<CategoryType[]>([]);
   const [donationItems, setDonationItems] = useState<ItemType[]>([]);
@@ -58,16 +60,25 @@ export default function Home({navigation}) {
             <View>
               <Text style={styles.text}>Hello,</Text>
               <Header
-                title={user.firstName + ' ' + user.lastName[0] + '.' + ' 👋'}
+                title={user.displayName + ' 👋'}
                 size={scaleFontSize(22)}
               />
             </View>
-
-            <Image
-              resizeMode={'contain'}
-              source={{uri: user.profileImage}}
-              style={styles.image}
-            />
+            <View style={styles.logout}>
+              <Image
+                resizeMode={'contain'}
+                source={{uri: user.profileImage}}
+                style={styles.image}
+              />
+              <Pressable
+                onPress={async () => {
+                  dispatch(resetToInitialState());
+                  await logout();
+                  navigation.navigate(Routes.Login);
+                }}>
+                <Header title="Logout" size={14} color="#156CF7" />
+              </Pressable>
+            </View>
           </View>
 
           <SearchInput
@@ -113,7 +124,6 @@ export default function Home({navigation}) {
                           item.categoryId !== categories.selectedCategoryId
                         }
                         onPress={value => {
-                          console.log(value);
                           dispatch(updateSelectedCategoryId(value));
                         }}
                       />
@@ -184,6 +194,7 @@ const styles = StyleSheet.create({
   image: {
     width: horizontalScale(50),
     height: verticalScale(50),
+    marginBottom: -10,
   },
   banner: {
     width: '100%',
@@ -199,5 +210,8 @@ const styles = StyleSheet.create({
   itemContainer: {
     maxWidth: '48%',
     marginBottom: verticalScale(23),
+  },
+  logout: {
+    alignItems: 'center',
   },
 });
